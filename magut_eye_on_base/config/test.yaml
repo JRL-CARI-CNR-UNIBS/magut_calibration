@@ -1,6 +1,5 @@
-magut_eye_on_base:
-  rotation_samples_number: 2
-  camera_base_link: camera_link
-  camera_marker_link: open_tip
-  robot_base_link: world
-  robot_end_link: tool0
+rotation_samples_number: 2
+camera_base_link: camera2_link
+camera_marker_link: Marker3
+robot_base_link: world
+robot_end_link: tool0

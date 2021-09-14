@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
+#include <tf/transform_broadcaster.h>
 #include <tf_conversions/tf_eigen.h>
 #include <eigen_conversions/eigen_msg.h>
 #include <Eigen/Geometry>
@@ -45,10 +46,11 @@ int main(int argc, char **argv)
   std::string group_name="manipulator";
   moveit::planning_interface::MoveGroupInterface move_group(group_name);
 
+  ROS_INFO("Start node");
   ros::AsyncSpinner as(4);
   as.start();
   tf::TransformListener listener;
-
+  tf::TransformBroadcaster broadcaster;
   std::string robot_base_link;
   std::string robot_end_link;
   std::string camera_base_link;
@@ -154,8 +156,11 @@ int main(int argc, char **argv)
   {
     move_group.setStartState(*move_group.getCurrentState());
     actual_pose = move_group.getCurrentPose(robot_end_link).pose;
-    double delta_x=-0.200+0.4*(1.0*(double)std::rand()/((double)RAND_MAX));
+    double delta_x=0;
+    while (std::abs(delta_x)<0.05)
+      delta_x=-0.200+0.4*(1.0*(double)std::rand()/((double)RAND_MAX));
     ROS_INFO("delta_x=%f",delta_x);
+
     target_pose.position.x=actual_pose.position.x+delta_x;
     ROS_DEBUG_STREAM("Actual\n"<<actual_pose<<"\nTarget=\n"<<target_pose);
     robot_state::RobotState target_state(*move_group.getCurrentState());
@@ -242,7 +247,9 @@ int main(int argc, char **argv)
   while(ros::ok())
   {
     move_group.setStartState(*move_group.getCurrentState());
-    double delta_y=-0.200+0.4*(1.0*(double)std::rand()/((double)RAND_MAX));
+    double delta_y=0;
+    while (std::abs(delta_y)<0.05)
+      delta_y=-0.200+0.4*(1.0*(double)std::rand()/((double)RAND_MAX));
     ROS_INFO("delta_y=%f",delta_y);
     target_pose.position.y=actual_pose.position.y+delta_y;
     ROS_DEBUG_STREAM("Actual\n"<<actual_pose<<"\nTarget=\n"<<target_pose);
@@ -328,7 +335,9 @@ int main(int argc, char **argv)
   while(ros::ok())
   {
     move_group.setStartState(*move_group.getCurrentState());
-    double delta_z=-0.200+0.4*(1.0*(double)std::rand()/((double)RAND_MAX));
+    double delta_z=0;
+    while (std::abs(delta_z)<0.05)
+      delta_z=-0.200+0.4*(1.0*(double)std::rand()/((double)RAND_MAX));
     ROS_INFO("delta_z=%f",delta_z);
     target_pose.position.z=actual_pose.position.z+delta_z;
     ROS_DEBUG_STREAM("Actual\n"<<actual_pose<<"\nTarget=\n"<<target_pose);
@@ -440,7 +449,10 @@ int main(int argc, char **argv)
     Eigen::Affine3d T_actual_pose;
     tf::poseMsgToEigen(actual_pose,T_actual_pose);
 
-    double delta_rot=-0.1+0.2*(1.0*(double)std::rand()/((double)RAND_MAX));
+    double delta_rot=0;
+    while (std::abs(delta_rot)<0.025)
+      delta_rot=-0.1+0.2*(1.0*(double)std::rand()/((double)RAND_MAX));
+
     ROS_INFO("delta_rot=%f",delta_rot);
     Eigen::AngleAxisd q(delta_rot,Eigen::Vector3d::UnitZ());
     T_actual_pose=T_actual_pose*q;
@@ -551,6 +563,19 @@ int main(int argc, char **argv)
   ROS_INFO_STREAM("q_robot_camera\n"<<q_robot_camera.vec()<<","<<q_robot_camera.w());
   ROS_INFO_STREAM("orig_robot_camera\n"<<orig_robot_camera);
   ROS_INFO_STREAM("orig_tool_marker\n"<<orig_tool_marker);
-
+  Eigen::Affine3d T_robot_camera;
+  T_robot_camera=q_robot_camera;
+  T_robot_camera.translation()=orig_robot_camera;
+  tf::StampedTransform t;
+  t.frame_id_=robot_base_link;
+  t.child_frame_id_=camera_base_link;
+  tf::poseEigenToTF(T_robot_camera,t);
+  ROS_INFO_STREAM("T_robot_camera\n"<<T_robot_camera.matrix());
+  while (ros::ok())
+  {
+    t.stamp_=ros::Time::now();
+    broadcaster.sendTransform(t);
+    ros::Duration(0.05).sleep();
+  }
   return 0;
 }

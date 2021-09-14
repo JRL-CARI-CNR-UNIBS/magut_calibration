@@ -1,0 +1,6 @@
+<launch>
+
+  <node pkg="magut_eye_on_base" type="magut_eye_on_base_node" name="magut_eye_on_base_node" output="screen">
+    <rosparam command="load" file="$(find magut_eye_on_base)/config/test.yaml" />
+  </node>
+</launch>
