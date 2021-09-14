@@ -163,9 +163,8 @@ int main(int argc, char **argv)
   while(ros::ok())
   {
     double delta_x=0;
-    while (std::abs(delta_x)<0.05)
+    while (std::abs(delta_x)<0.5*amplitude)
       delta_x=(-1.0+2.0*(1.0*(double)std::rand()/((double)RAND_MAX)))*amplitude;
-    ROS_INFO("delta_x=%f",delta_x);
 
     target_pose.position.x=actual_pose.position.x+delta_x;
     ROS_DEBUG_STREAM("Actual\n"<<actual_pose<<"\nTarget=\n"<<target_pose);
@@ -233,9 +232,9 @@ int main(int argc, char **argv)
   {
     move_group.setStartState(*move_group.getCurrentState());
     double delta_y=0;
-    while (std::abs(delta_y)<0.05)
-      delta_y=-0.200+0.4*(1.0*(double)std::rand()/((double)RAND_MAX));
-    ROS_INFO("delta_y=%f",delta_y);
+    while (std::abs(delta_y)<0.5*amplitude)
+      delta_y=(-1.0+2.0*(1.0*(double)std::rand()/((double)RAND_MAX)))*amplitude;
+
     target_pose.position.y=initial_pose.position.y+delta_y;
     ROS_DEBUG_STREAM("Actual\n"<<actual_pose<<"\nTarget=\n"<<target_pose);
     robot_state::RobotState target_state(*move_group.getCurrentState());
@@ -308,9 +307,9 @@ int main(int argc, char **argv)
   {
     move_group.setStartState(*move_group.getCurrentState());
     double delta_z=0;
-    while (std::abs(delta_z)<0.05)
-      delta_z=-0.200+0.4*(1.0*(double)std::rand()/((double)RAND_MAX));
-    ROS_INFO("delta_z=%f",delta_z);
+    while (std::abs(delta_z)<0.5*amplitude)
+      delta_z=(-1.0+2.0*(1.0*(double)std::rand()/((double)RAND_MAX)))*amplitude;
+
     target_pose.position.z=initial_pose.position.z+delta_z;
     ROS_DEBUG_STREAM("Actual\n"<<actual_pose<<"\nTarget=\n"<<target_pose);
     robot_state::RobotState target_state(*move_group.getCurrentState());
@@ -436,8 +435,7 @@ int main(int argc, char **argv)
     while (std::abs(delta_rot)<0.5*amplitude_rot)
     {
       double tmp=(double)std::rand()/((double)RAND_MAX);
-      delta_rot=-(1.0+2.0*tmp)*amplitude_rot;
-      ROS_INFO("delta_rot=%f, amplitude_rot=%f, tmp=%f",delta_rot,amplitude_rot,tmp);
+      delta_rot=(-1.0+2.0*tmp)*amplitude_rot;
     }
 
     Eigen::Vector3d axis=Eigen::MatrixXd::Random(3,1);
