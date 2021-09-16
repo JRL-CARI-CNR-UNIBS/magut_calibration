@@ -84,9 +84,10 @@ int main(int argc, char **argv)
     return 0;
   }
 
-  double amplitude=0.2;
-  double amplitude_rot=15.0/180*M_PI;
-
+  double amplitude=0.4;
+  double amplitude_rot=20.0/180*M_PI;
+  double t_max=5;
+  move_group.setMaxVelocityScalingFactor(0.1);
   ROS_INFO("Move the robot to the initial position (the robot should be able to move around 200mm  and 15 degree in each direction)");
   ROS_INFO("Afterthat, be sure the robot is stopped");
 
@@ -182,6 +183,9 @@ int main(int argc, char **argv)
     {
       ROS_INFO("planned!");
     }
+    if (plan.trajectory_.joint_trajectory.points.back().time_from_start.toSec()>t_max)
+      continue;
+
     if (!(move_group.execute(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS))
       ROS_WARN("unable to execute");
     else
@@ -251,6 +255,8 @@ int main(int argc, char **argv)
     {
       ROS_INFO("planned!");
     }
+    if (plan.trajectory_.joint_trajectory.points.back().time_from_start.toSec()>t_max)
+      continue;
     if (!(move_group.execute(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS))
       ROS_WARN("unable to execute");
     else
@@ -326,6 +332,9 @@ int main(int argc, char **argv)
     {
       ROS_INFO("planned!");
     }
+    if (plan.trajectory_.joint_trajectory.points.back().time_from_start.toSec()>t_max)
+      continue;
+
     if (!(move_group.execute(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS))
       ROS_WARN("unable to execute");
     else
@@ -458,6 +467,8 @@ int main(int argc, char **argv)
     {
       ROS_INFO("planned!");
     }
+    if (plan.trajectory_.joint_trajectory.points.back().time_from_start.toSec()>t_max)
+      continue;
 
     if (!(move_group.execute(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS))
     {
@@ -507,9 +518,15 @@ int main(int argc, char **argv)
   Eigen::Quaterniond q_base_camera(R_base_camera);
 
   ROS_INFO_STREAM("R_base_camera\n"<<R_base_camera);
-  ROS_INFO_STREAM("q_base_camera\n"<<q_base_camera.vec()<<","<<q_base_camera.w());
-  ROS_INFO_STREAM("orig_base_camera\n"<<orig_base_camera);
-  ROS_INFO_STREAM("orig_tool_marker\n"<<orig_tool_marker);
+  ROS_INFO_STREAM("orig_base_camera\n"<<orig_base_camera.transpose());
+  ROS_INFO_STREAM("q_base_camera\n"<<q_base_camera.vec().transpose()<<","<<q_base_camera.w());
+
+  ROS_INFO_STREAM("transformation:\n parent = "<< robot_base_link <<"\n" <<
+                  " child = " << camera_base_link <<"\n" <<
+                  "x y z qx qy qz qw\n"<<orig_base_camera.transpose()<<" "<<q_base_camera.vec().transpose()<<" "<<q_base_camera.w());
+
+
+  ROS_INFO_STREAM("\n\n\n\norig_tool_marker\n"<<orig_tool_marker);
   Eigen::Affine3d T_base_camera;
   T_base_camera=q_base_camera;
   T_base_camera.translation()=orig_base_camera;
@@ -549,6 +566,43 @@ int main(int argc, char **argv)
   }
 
   ROS_INFO_STREAM("T_base_camera\n"<<T_base_camera.matrix());
+  ros::Time t0=ros::Time::now();
+  while (ros::ok())
+  {
+    if ((ros::Time::now()-t0).toSec()>10)
+      break;
+    tf_base_camera.stamp_=ros::Time::now();
+    broadcaster.sendTransform(tf_base_camera);
+    tf_tool_marker.stamp_=ros::Time::now();
+    broadcaster.sendTransform(tf_tool_marker);
+    ros::Duration(0.05).sleep();
+  }
+
+  while (ros::ok())
+  {
+    ROS_INFO("Press");
+    ROS_INFO("- '1' to publish current TF");
+    ROS_INFO("- '-10' and ENTER to stop");
+
+    std::string input;
+    std::cin >> input;
+    try
+    {
+      y = boost::lexical_cast<int> (input);
+    }
+    catch (boost::bad_lexical_cast const &)
+    {
+      ROS_ERROR("Error: input string was not valid.");
+      continue;
+    }
+    if (y==-10)
+      return 0;
+    if (y==1)
+      break;
+  }
+
+  tf_base_camera.child_frame_id_=camera_base_link;
+  tf_tool_marker.child_frame_id_=camera_marker_link;
   while (ros::ok())
   {
     tf_base_camera.stamp_=ros::Time::now();
