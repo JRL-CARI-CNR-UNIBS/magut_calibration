@@ -195,7 +195,7 @@ int main(int argc, char **argv)
       break;
     }
   }
-  ros::Duration(2).sleep();
+  ros::Duration(5.0).sleep();
 
 
   while (ros:: ok())
@@ -266,7 +266,7 @@ int main(int argc, char **argv)
       break;
     }
   }
-  ros::Duration(2).sleep();
+  ros::Duration(5.0).sleep();
 
 
   while (ros:: ok())
@@ -345,7 +345,7 @@ int main(int argc, char **argv)
     }
   }
 
-  ros::Duration(2.0).sleep();
+  ros::Duration(5.0).sleep();
 
   while (ros:: ok())
   {
@@ -417,7 +417,7 @@ int main(int argc, char **argv)
     actual_pose=target_pose;
     ROS_INFO("moved");
   }
-
+  ros::Duration(5.0).sleep();
   // Rotation
 
 
@@ -478,7 +478,7 @@ int main(int argc, char **argv)
     actual_pose=target_pose;
     ROS_INFO("moved");
 
-    ros::Duration(2.0).sleep();
+    ros::Duration(5.0).sleep();
 
     while (ros:: ok())
     {
@@ -565,6 +565,7 @@ int main(int argc, char **argv)
     ROS_INFO("moved");
   }
 
+  ros::Duration(5.0).sleep();
   ROS_INFO_STREAM("T_base_camera\n"<<T_base_camera.matrix());
   ros::Time t0=ros::Time::now();
   while (ros::ok())
