@@ -1,6 +1,8 @@
 <launch>
+  <arg name="group_name" default="manipulator"/>
 
   <node pkg="magut_eye_on_base" type="magut_eye_on_base_node" name="magut_eye_on_base_node" output="screen">
     <rosparam command="load" file="$(find magut_eye_on_base)/config/test.yaml" />
+    <param name="group_name" value="$(arg group_name)" />
   </node>
 </launch>

@@ -44,6 +44,11 @@ int main(int argc, char **argv)
   ros::NodeHandle pnh("~");
 
   std::string group_name="manipulator";
+  if (!pnh.getParam("group_name",group_name))
+  {
+    ROS_ERROR("%s/group_name undefined, set manipulator",pnh.getNamespace().c_str());
+  }
+  
   moveit::planning_interface::MoveGroupInterface move_group(group_name);
 
   ROS_INFO("Start node");
@@ -55,6 +60,7 @@ int main(int argc, char **argv)
   std::string robot_end_link;
   std::string camera_base_link;
   std::string camera_marker_link;
+
 
   if (!pnh.getParam("robot_base_link",robot_base_link))
   {
